@@ -1,0 +1,56 @@
+{
+	"name": "sematico/wp-cli-seeder",
+	"description": "A development plugin that adds some WP-CLI commands for generating WordPress data.",
+	"keywords": [
+		"wordpress",
+		"sematico",
+		"framework"
+	],
+	"authors": [{
+		"name": "Alessandro Tesoro",
+		"email": "alessandro.tesoro@icloud.com"
+	}],
+	"homepage": "https://github.com/alessandrotesoro/wp-cli-seeder",
+	"license": "MIT",
+	"support": {
+		"issues": "https://github.com/alessandrotesoro/wp-cli-seeder/issues"
+	},
+	"autoload": {
+		"psr-4": {
+			"Sematico\\Seeder\\": "src"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"Sematico\\Seeder\\Tests\\": "tests"
+		}
+	},
+	"require": {
+		"php": ">=7.2"
+	},
+	"require-dev": {
+		"chevere/var-dump": "^0.6.0",
+		"chevere/xr": "^0.6.0",
+		"chevere/xr-server": "^0.6.2",
+		"dealerdirect/phpcodesniffer-composer-installer": "^0.7.0",
+		"symfony/var-dumper": "^5.1",
+		"wp-coding-standards/wpcs": "^3.0",
+		"squizlabs/php_codesniffer": "^3.7",
+		"phpcompatibility/phpcompatibility-wp": "^2.1"
+	},
+	"config": {
+		"bin-dir": "bin",
+		"sort-packages": true,
+		"preferred-install": {
+			"*": "dist"
+		},
+		"platform-check": false,
+		"allow-plugins": {
+			"dealerdirect/phpcodesniffer-composer-installer": true
+		}
+	},
+	"scripts": {
+		"test": "bin/phpunit"
+	},
+	"prefer-stable": true
+}
