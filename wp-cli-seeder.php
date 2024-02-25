@@ -8,10 +8,14 @@
  * Author URI: https://alessandrotesoro.me
  */
 
-defined('ABSPATH') || exit;
+namespace Sematico\Seeder;
 
-require dirname(__FILE__) . '/vendor/autoload.php';
+if ( ! class_exists( '\WP_CLI' ) ) {
+	return;
+}
 
-add_action( 'plugins_loaded', function() {
+if ( file_exists( dirname( __FILE__ ) . '/vendor/autoload.php' ) ) {
+	require dirname( __FILE__ ) . '/vendor/autoload.php';
+}
 
-} );
+\WP_CLI::add_command( 'seed', SeedCommand::class );
