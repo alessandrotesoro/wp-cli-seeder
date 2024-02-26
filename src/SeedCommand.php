@@ -19,6 +19,8 @@ use WP_CLI;
  */
 class SeedCommand {
 
+	protected $items_to_seed;
+
 	/**
 	 * Seed the database with dummy products.
 	 *
@@ -38,6 +40,8 @@ class SeedCommand {
 	 */
 	public function products( $args, $assoc_args ) {
 		$items = $assoc_args['items'];
+
+		$this->items_to_seed = $items;
 
 		// Check if WooCommerce is installed.
 		$this->check_woocommerce();
@@ -170,9 +174,14 @@ class SeedCommand {
 	private function process_products( $products ) {
 		$this->delete_all_products();
 
+		$progress = \WP_CLI\Utils\make_progress_bar( 'Generating products', $this->items_to_seed );
+
 		foreach ( $products as $product ) {
 			$this->insert_woocommerce_product( $product );
+			$progress->tick();
 		}
+
+		$progress->finish();
 
 		WP_CLI::line( 'Products have been created.' );
 	}
