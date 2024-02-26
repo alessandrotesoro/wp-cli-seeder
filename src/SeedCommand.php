@@ -158,11 +158,15 @@ class SeedCommand {
 	private function delete_all_product_categories() {
 		$terms = get_terms( 'product_cat' );
 
+		$progress = \WP_CLI\Utils\make_progress_bar( 'Deleting existing product categories', count( $terms ) );
+
 		foreach ( $terms as $term ) {
 			wp_delete_term( $term->term_id, 'product_cat' );
+
+			$progress->tick();
 		}
 
-		WP_CLI::line( 'All existing product categories have been deleted.' );
+		$progress->finish();
 	}
 
 	/**
@@ -182,8 +186,6 @@ class SeedCommand {
 		}
 
 		$progress->finish();
-
-		WP_CLI::line( 'Products have been created.' );
 	}
 
 	/**
@@ -198,11 +200,15 @@ class SeedCommand {
 			]
 		);
 
+		$progress = \WP_CLI\Utils\make_progress_bar( 'Deleting existing products', count( $products ) );
+
 		foreach ( $products as $product ) {
 			$product->delete( true );
+
+			$progress->tick();
 		}
 
-		WP_CLI::line( 'All existing products have been deleted.' );
+		$progress->finish();
 	}
 
 	/**
