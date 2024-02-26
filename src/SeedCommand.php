@@ -37,7 +37,22 @@ class SeedCommand {
 	public function products( $args, $assoc_args ) {
 		$items = isset( $assoc_args['items'] ) ? $assoc_args['items'] : 10;
 
+		// Check if WooCommerce is installed.
+		$this->check_woocommerce();
+
 		WP_CLI::success( "Seeding the database with {$items} items." );
+	}
+
+	/**
+	 * Check if WooCommerce is installed.
+	 * If not, display an error message and exit.
+	 *
+	 * @return void
+	 */
+	private function check_woocommerce() {
+		if ( ! class_exists( 'WooCommerce' ) ) {
+			WP_CLI::error( 'WooCommerce is not installed.' );
+		}
 	}
 
 }

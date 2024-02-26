@@ -26,7 +26,8 @@
 		}
 	},
 	"require": {
-		"php": ">=7.2"
+		"php": ">=7.2",
+		"halaxa/json-machine": "^1.1"
 	},
 	"require-dev": {
 		"chevere/var-dump": "^0.6.0",
