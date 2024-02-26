@@ -18,7 +18,7 @@ use WP_CLI;
 class SeedCommand {
 
 	/**
-	 * Seed the database with dummy data.
+	 * Seed the database with dummy products.
 	 *
 	 * ## OPTIONS
 	 *
@@ -30,11 +30,11 @@ class SeedCommand {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp seed
+	 *     wp seed products --items=100
 	 *
 	 * @when after_wp_load
 	 */
-	public function seed( $args, $assoc_args ) {
+	public function products( $args, $assoc_args ) {
 		$items = isset( $assoc_args['items'] ) ? $assoc_args['items'] : 10;
 
 		WP_CLI::success( "Seeding the database with {$items} items." );
