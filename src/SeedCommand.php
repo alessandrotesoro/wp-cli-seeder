@@ -242,4 +242,46 @@ class SeedCommand {
 
 		$product->save(); // Save the product
 	}
+
+	/**
+	 * Delete all posts of a given post type from the database.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--post_type=<string>]
+	 * : How many items to generate.
+	 * ---
+	 * default: post
+	 * ---
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp seed delete --post_type=post
+	 *
+	 * @when after_wp_load
+	 */
+	public function delete( $args, $assoc_args ) {
+		$post_type = $assoc_args['post_type'];
+
+		// Query all posts of the given post type and delete them.
+		$posts = get_posts(
+			[
+				'post_type'      => $post_type,
+				'posts_per_page' => -1,
+				'fields'         => 'ids',
+			]
+		);
+
+		$progress = \WP_CLI\Utils\make_progress_bar( "Deleting all {$post_type}", count( $posts ) );
+
+		foreach ( $posts as $post ) {
+			wp_delete_post( $post, true );
+
+			$progress->tick();
+		}
+
+		$progress->finish();
+
+		WP_CLI::success( "All {$post_type} have been deleted." );
+	}
 }
