@@ -263,6 +263,9 @@ class SeedCommand {
 	public function delete( $args, $assoc_args ) {
 		$post_type = $assoc_args['post_type'];
 
+		// Confirm the deletion.
+		WP_CLI::confirm( "Are you sure you want to delete all {$post_type}?" );
+
 		// Query all posts of the given post type and delete them.
 		$posts = get_posts(
 			[
