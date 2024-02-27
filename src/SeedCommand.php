@@ -56,6 +56,8 @@ class SeedCommand {
 
 		$this->process_categories( $categories );
 
+		$this->process_attributes( $products );
+
 		$this->process_products( $products );
 
 		WP_CLI::success( "Seeding the database with {$items} items." );
@@ -240,7 +242,132 @@ class SeedCommand {
 			$product->set_category_ids( $categories_ids );
 		}
 
+		// Get the brand from the product data.
+		$brand = $data['brand'];
+
+		// Find the brand by name and add it to the product.
+		$term = get_term_by( 'name', $brand, 'pa_brand' );
+
+		$att  = null;
+		$att2 = null;
+
+		if ( $term ) {
+			$att = new \WC_Product_Attribute();
+			$att->set_id( $term->term_id );
+			$att->set_name( 'pa_brand' );
+			$att->set_options( [ $term->term_id ] );
+			$att->set_position( 0 );
+			$att->set_visible( true );
+			$att->set_variation( false );
+		}
+
+		// Get the type from the product data.
+		$type = $data['type'];
+
+		// Find the type by name and add it to the product.
+		$term2 = get_term_by( 'name', $type, 'pa_product_type' );
+
+		if ( $term2 ) {
+			$att2 = new \WC_Product_Attribute();
+			$att2->set_id( $term2->term_id );
+			$att2->set_name( 'pa_product_type' );
+			$att2->set_options( [ $term2->term_id ] );
+			$att2->set_position( 0 );
+			$att2->set_visible( true );
+			$att2->set_variation( false );
+		}
+
+		if ( $att && $att2 ) {
+			$product->set_attributes( [ $att, $att2 ] );
+		} elseif ( $att ) {
+			$product->set_attributes( [ $att ] );
+		} elseif ( $att2 ) {
+			$product->set_attributes( [ $att2 ] );
+		}
+
 		$product->save(); // Save the product
+	}
+
+	/**
+	 * Process the attributes from the products array.
+	 *
+	 * @param array $products The products to process.
+	 * @return void
+	 */
+	private function process_attributes( $products ) {
+		// Collect the "brand" from the products array.
+		$brands = array_column( $products, 'brand' );
+
+		// Remove duplicates from the array.
+		$brands = array_unique( $brands );
+
+		// Check if the "brand" attribute exists.
+		$attribute = wc_get_attribute( 'brand' );
+
+		if ( ! $attribute ) {
+			$attribute = wc_create_attribute(
+				[
+					'name'         => 'Brand',
+					'slug'         => 'brand',
+					'type'         => 'select',
+					'order_by'     => 'menu_order',
+					'has_archives' => false,
+				]
+			);
+		}
+
+		// Create the "brand" terms by looping through the brands array.
+		$progress = \WP_CLI\Utils\make_progress_bar( 'Creating brand terms', count( $brands ) );
+
+		foreach ( $brands as $brand ) {
+			$term = term_exists( $brand, 'pa_brand' );
+
+			if ( 0 === $term || null === $term ) {
+				wp_insert_term( $brand, 'pa_brand' );
+			}
+
+			$progress->tick();
+		}
+
+		$progress->finish();
+
+		// Now collect the "types" from the products array.
+		$types = array_column( $products, 'type' );
+
+		// Remove duplicates from the array.
+		$types = array_unique( $types );
+
+		// Check if the "type" attribute exists.
+		$attribute_type = wc_get_attribute( 'product_type' );
+
+		if ( ! $attribute_type ) {
+			$attribute_type = wc_create_attribute(
+				[
+					'name'         => 'Type',
+					'slug'         => 'product_type',
+					'type'         => 'select',
+					'order_by'     => 'menu_order',
+					'has_archives' => false,
+				]
+			);
+		}
+
+		// Create the "type" terms by looping through the types array.
+		$progress = \WP_CLI\Utils\make_progress_bar( 'Creating type terms', count( $types ) );
+
+		foreach ( $types as $type ) {
+			$term = term_exists( $type, 'pa_product_type' );
+
+			if ( 0 === $term || null === $term ) {
+				wp_insert_term( $type, 'pa_product_type' );
+			}
+
+			$progress->tick();
+		}
+
+		$progress->finish();
+
+		WP_CLI::line( 'Required product attributes have been created.' );
 	}
 
 	/**
