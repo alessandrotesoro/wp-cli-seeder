@@ -420,4 +420,46 @@ class SeedProductsCommand extends BaseSeedCommand {
 
 		WP_CLI::line( 'Required product attributes have been created.' );
 	}
+
+	/**
+	 * Randomly set a sale price for products.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--items=<number>]
+	 * : For how many items to generate sales.
+	 * ---
+	 * default: 10
+	 * ---
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp seed products sale --items=10
+	 *
+	 * @when after_wp_load
+	 *
+	 * @param array $args       Command arguments.
+	 * @param array $assoc_args Command associative arguments.
+	 */
+	public function sales( $args, $assoc_args ) {
+		$products = wc_get_products(
+			[
+				'limit'   => $assoc_args['items'] ?? 10,
+				'orderby' => 'rand',
+			]
+		);
+
+		$progress = \WP_CLI\Utils\make_progress_bar( 'Generating sales', count( $products ) );
+
+		foreach ( $products as $product ) {
+			$product->set_sale_price( $product->get_price() * 0.8 );
+			$product->save();
+
+			$progress->tick();
+		}
+
+		$progress->finish();
+
+		WP_CLI::success( 'Sales have been generated.' );
+	}
 }
