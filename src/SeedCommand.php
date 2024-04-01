@@ -471,6 +471,11 @@ class SeedCommand {
 			]
 		);
 
+		if ( empty( $terms ) || is_wp_error( $terms ) ) {
+			WP_CLI::line( "No terms found in {$taxonomy}. Nothing to delete." );
+			return;
+		}
+
 		$progress = \WP_CLI\Utils\make_progress_bar( "Deleting all terms from {$taxonomy}", count( $terms ) );
 
 		foreach ( $terms as $term ) {
