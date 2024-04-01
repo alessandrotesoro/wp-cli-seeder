@@ -449,7 +449,7 @@ class SeedProductsCommand extends BaseSeedCommand {
 			]
 		);
 
-		$progress = \WP_CLI\Utils\make_progress_bar( 'Generating sales', count( $products ) );
+		$progress = \WP_CLI\Utils\make_progress_bar( 'Generating sale prices', count( $products ) );
 
 		foreach ( $products as $product ) {
 			$product->set_sale_price( $product->get_price() * 0.8 );
@@ -460,6 +460,6 @@ class SeedProductsCommand extends BaseSeedCommand {
 
 		$progress->finish();
 
-		WP_CLI::success( 'Sales have been generated.' );
+		WP_CLI::success( 'Sale prices have been generated.' );
 	}
 }
