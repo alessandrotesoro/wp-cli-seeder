@@ -24,6 +24,8 @@ class SeedProductsCommand extends BaseSeedCommand {
 
 	protected $post_type = 'product';
 
+	protected $items_to_seed = 100;
+
 	/**
 	 * Seed the database with dummy products.
 	 *
@@ -46,6 +48,18 @@ class SeedProductsCommand extends BaseSeedCommand {
 	 */
 	public function generate( $args, $assoc_args ) {
 		$items = $assoc_args['items'];
+
+		if ( ! is_numeric( $items ) ) {
+			WP_CLI::error( 'The --items argument must be a number.' );
+		}
+
+		if ( $items < 1 ) {
+			WP_CLI::error( 'The --items argument must be greater than 0.' );
+		}
+
+		if ( $items > 10000 ) {
+			WP_CLI::error( 'The --items argument must be less than 10000.' );
+		}
 
 		$this->items_to_seed = $items;
 
