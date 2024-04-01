@@ -12,14 +12,17 @@ namespace Sematico\Seeder;
 
 use JsonMachine\Items;
 use JsonMachine\JsonDecoder\ExtJsonDecoder;
+use Sematico\Seeder\Traits\CanDeleteTerms;
 use WP_CLI;
 
 /**
- * Command for generating WordPress data.
+ * Command for generating WooCommerce products data.
  */
-class SeedCommand {
+class SeedProductsCommand extends BaseSeedCommand {
 
-	protected $items_to_seed;
+	use CanDeleteTerms;
+
+	protected $post_type = 'product';
 
 	/**
 	 * Seed the database with dummy products.
@@ -34,11 +37,14 @@ class SeedCommand {
 	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp seed products --items=100
+	 *     wp seed products generate --items=100
 	 *
 	 * @when after_wp_load
+	 *
+	 * @param array $args       Command arguments.
+	 * @param array $assoc_args Command associative arguments.
 	 */
-	public function products( $args, $assoc_args ) {
+	public function generate( $args, $assoc_args ) {
 		$items = $assoc_args['items'];
 
 		$this->items_to_seed = $items;
@@ -384,108 +390,5 @@ class SeedCommand {
 		$progress->finish();
 
 		WP_CLI::line( 'Required product attributes have been created.' );
-	}
-
-	/**
-	 * Delete all posts of a given post type from the database.
-	 *
-	 * ## OPTIONS
-	 *
-	 * [--post_type=<string>]
-	 * : How many items to generate.
-	 * ---
-	 * default: post
-	 * ---
-	 *
-	 * ## EXAMPLES
-	 *
-	 *     wp seed delete --post_type=post
-	 *
-	 * @when after_wp_load
-	 */
-	public function delete( $args, $assoc_args ) {
-		$post_type = $assoc_args['post_type'];
-
-		// Confirm the deletion.
-		WP_CLI::confirm( "Are you sure you want to delete all {$post_type}?" );
-
-		// Query all posts of the given post type and delete them.
-		$posts = get_posts(
-			[
-				'post_type'      => $post_type,
-				'posts_per_page' => -1,
-				'fields'         => 'ids',
-			]
-		);
-
-		$progress = \WP_CLI\Utils\make_progress_bar( "Deleting all {$post_type}", count( $posts ) );
-
-		foreach ( $posts as $post ) {
-			wp_delete_post( $post, true );
-
-			$progress->tick();
-		}
-
-		$progress->finish();
-
-		WP_CLI::success( "All {$post_type} have been deleted." );
-	}
-
-	/**
-	 * Delete all terms of a given taxonomy from the database.
-	 *
-	 * ## OPTIONS
-	 *
-	 * [--taxonomy=<string>]
-	 * : The taxonomy to delete terms from.
-	 * ---
-	 * default: category
-	 * ---
-	 *
-	 * [--force]
-	 * : Force the deletion without confirmation.
-	 * ---
-	 * default: false
-	 * ---
-	 *
-	 * ## EXAMPLES
-	 *
-	 *     wp seed delete_terms --taxonomy=category
-	 *
-	 * @when after_wp_load
-	 */
-	public function delete_terms( $args, $assoc_args ) {
-		$taxonomy = $assoc_args['taxonomy'];
-
-		// Confirm the deletion.
-		if ( ! \WP_CLI\Utils\get_flag_value( $assoc_args, 'force' ) ) {
-			WP_CLI::confirm( "Are you sure you want to delete all terms from {$taxonomy}?" );
-		}
-
-		// Query all terms of the given taxonomy and delete them.
-		$terms = get_terms(
-			[
-				'taxonomy'   => $taxonomy,
-				'hide_empty' => false,
-				'fields'     => 'ids',
-			]
-		);
-
-		if ( empty( $terms ) || is_wp_error( $terms ) ) {
-			WP_CLI::line( "No terms found in {$taxonomy}. Nothing to delete." );
-			return;
-		}
-
-		$progress = \WP_CLI\Utils\make_progress_bar( "Deleting all terms from {$taxonomy}", count( $terms ) );
-
-		foreach ( $terms as $term ) {
-			wp_delete_term( $term, $taxonomy );
-
-			$progress->tick();
-		}
-
-		$progress->finish();
-
-		WP_CLI::success( "All terms from {$taxonomy} have been deleted." );
 	}
 }

@@ -20,4 +20,4 @@ if ( file_exists( dirname( __FILE__ ) . '/vendor/autoload.php' ) ) {
 
 define( 'SEEDER_PATH', plugin_dir_path( __FILE__ ) );
 
-\WP_CLI::add_command( 'seed', SeedCommand::class );
+\WP_CLI::add_command( 'seed products', SeedProductsCommand::class );
