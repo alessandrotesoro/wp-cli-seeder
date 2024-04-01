@@ -26,6 +26,8 @@ class SeedProductsCommand extends BaseSeedCommand {
 
 	protected $items_to_seed = 100;
 
+	protected $skip_images = false;
+
 	/**
 	 * Seed the database with dummy products.
 	 *
@@ -37,9 +39,16 @@ class SeedProductsCommand extends BaseSeedCommand {
 	 * default: 100
 	 * ---
 	 *
+	 * [--skip-images]
+	 * : Whether to download images or not.
+	 * ---
+	 * default: false
+	 * ---
+	 *
 	 * ## EXAMPLES
 	 *
 	 *     wp seed products generate --items=100
+	 *     wp seed products generate --items=1000 --skip-images
 	 *
 	 * @when after_wp_load
 	 *
@@ -47,7 +56,10 @@ class SeedProductsCommand extends BaseSeedCommand {
 	 * @param array $assoc_args Command associative arguments.
 	 */
 	public function generate( $args, $assoc_args ) {
-		$items = $assoc_args['items'];
+		$this->items_to_seed = $assoc_args['items'];
+		$this->skip_images   = isset( $assoc_args['skip-images'] );
+
+		$items = $this->items_to_seed;
 
 		if ( ! is_numeric( $items ) ) {
 			WP_CLI::error( 'The --items argument must be a number.' );
@@ -60,8 +72,6 @@ class SeedProductsCommand extends BaseSeedCommand {
 		if ( $items > 10000 ) {
 			WP_CLI::error( 'The --items argument must be less than 10000.' );
 		}
-
-		$this->items_to_seed = $items;
 
 		// Check if WooCommerce is installed.
 		$this->check_woocommerce();
@@ -308,7 +318,7 @@ class SeedProductsCommand extends BaseSeedCommand {
 		$product_id = $product->save(); // Save the product
 
 		// Set the featured image for the product.
-		if ( isset( $data['image'] ) ) {
+		if ( isset( $data['image'] ) && ! $this->skip_images ) {
 			$this->download_and_set_featured_image( $product_id, $data['image'] );
 		}
 	}
