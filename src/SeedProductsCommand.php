@@ -291,7 +291,12 @@ class SeedProductsCommand extends BaseSeedCommand {
 			$product->set_attributes( [ $att2 ] );
 		}
 
-		$product->save(); // Save the product
+		$product_id = $product->save(); // Save the product
+
+		// Set the featured image for the product.
+		if ( isset( $data['image'] ) ) {
+			$this->download_and_set_featured_image( $product_id, $data['image'] );
+		}
 	}
 
 	/**
