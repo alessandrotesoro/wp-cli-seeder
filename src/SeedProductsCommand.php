@@ -567,4 +567,49 @@ class SeedProductsCommand extends BaseSeedCommand {
 
 		WP_CLI::success( 'Stock status has been updated.' );
 	}
+
+	/**
+	 * Randomly set stock quantity for products.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--items=<number>]
+	 * : For how many items to generate sales.
+	 * ---
+	 * default: 10
+	 * ---
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp seed products stock_quantity --items=10
+	 *
+	 * @when after_wp_load
+	 *
+	 * @param array $args       Command arguments.
+	 * @param array $assoc_args Command associative arguments.
+	 */
+	public function stock_quantity( $args, $assoc_args ) {
+		WP_CLI::confirm( 'This will update the stock quantity for random products. Are you sure?' );
+
+		$products = wc_get_products(
+			[
+				'limit'   => $assoc_args['items'] ?? 10,
+				'orderby' => 'rand',
+			]
+		);
+
+		$progress = \WP_CLI\Utils\make_progress_bar( 'Updating stock quantity', count( $products ) );
+
+		foreach ( $products as $product ) {
+			$product->set_manage_stock( true );
+			$product->set_stock_quantity( wp_rand( 1, 100 ) );
+			$product->save();
+
+			$progress->tick();
+		}
+
+		$progress->finish();
+
+		WP_CLI::success( 'Stock quantity has been updated.' );
+	}
 }
