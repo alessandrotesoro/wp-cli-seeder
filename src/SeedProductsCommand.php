@@ -443,7 +443,7 @@ class SeedProductsCommand extends BaseSeedCommand {
 	 */
 	public function sales( $args, $assoc_args ) {
 
-		$confirm = WP_CLI::confirm( 'Are you sure you want to generate discounted prices for products?' );
+		WP_CLI::confirm( 'Are you sure you want to generate discounted prices for products?' );
 
 		if ( ! $confirm ) {
 			return;
@@ -492,11 +492,7 @@ class SeedProductsCommand extends BaseSeedCommand {
 	 */
 	public function featured( $args, $assoc_args ) {
 
-		$confirm = WP_CLI::confirm( 'This will set random products as featured. Are you sure?' );
-
-		if ( ! $confirm ) {
-			return;
-		}
+		WP_CLI::confirm( 'This will set random products as featured. Are you sure?' );
 
 		$products = wc_get_products(
 			[
