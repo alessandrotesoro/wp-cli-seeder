@@ -15,6 +15,8 @@ use JsonMachine\JsonDecoder\ExtJsonDecoder;
 use Sematico\Seeder\Traits\CanDeleteTerms;
 use WP_CLI;
 
+use function Laravel\Prompts\select;
+
 /**
  * Command for generating WooCommerce products data.
  */
@@ -491,7 +493,6 @@ class SeedProductsCommand extends BaseSeedCommand {
 	 * @param array $assoc_args Command associative arguments.
 	 */
 	public function featured( $args, $assoc_args ) {
-
 		WP_CLI::confirm( 'This will set random products as featured. Are you sure?' );
 
 		$products = wc_get_products(
@@ -513,5 +514,57 @@ class SeedProductsCommand extends BaseSeedCommand {
 		$progress->finish();
 
 		WP_CLI::success( 'Featured products have been generated.' );
+	}
+
+	/**
+	 * Randomly set stock status for products.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--items=<number>]
+	 * : For how many items to generate sales.
+	 * ---
+	 * default: 10
+	 * ---
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp seed products stock_status --items=10
+	 *
+	 * @when after_wp_load
+	 *
+	 * @param array $args       Command arguments.
+	 * @param array $assoc_args Command associative arguments.
+	 */
+	public function stock_status( $args, $assoc_args ) {
+		WP_CLI::confirm( 'This will update the stock status for random products. Are you sure?' );
+
+		$stati = wc_get_product_stock_status_options();
+
+		$role = select(
+			label: 'Select a stock status',
+			options: $stati,
+			default: 'instock'
+		);
+
+		$products = wc_get_products(
+			[
+				'limit'   => $assoc_args['items'] ?? 10,
+				'orderby' => 'rand',
+			]
+		);
+
+		$progress = \WP_CLI\Utils\make_progress_bar( 'Updating stock status', count( $products ) );
+
+		foreach ( $products as $product ) {
+			$product->set_stock_status( $role );
+			$product->save();
+
+			$progress->tick();
+		}
+
+		$progress->finish();
+
+		WP_CLI::success( 'Stock status has been updated.' );
 	}
 }
