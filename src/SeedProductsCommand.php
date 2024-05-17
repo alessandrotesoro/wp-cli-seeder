@@ -442,6 +442,13 @@ class SeedProductsCommand extends BaseSeedCommand {
 	 * @param array $assoc_args Command associative arguments.
 	 */
 	public function sales( $args, $assoc_args ) {
+
+		$confirm = WP_CLI::confirm( 'Are you sure you want to generate discounted prices for products?' );
+
+		if ( ! $confirm ) {
+			return;
+		}
+
 		$products = wc_get_products(
 			[
 				'limit'   => $assoc_args['items'] ?? 10,
@@ -461,5 +468,54 @@ class SeedProductsCommand extends BaseSeedCommand {
 		$progress->finish();
 
 		WP_CLI::success( 'Sale prices have been generated.' );
+	}
+
+	/**
+	 * Randomly set products as featured.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--items=<number>]
+	 * : For how many items to generate sales.
+	 * ---
+	 * default: 10
+	 * ---
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp seed products featured --items=10
+	 *
+	 * @when after_wp_load
+	 *
+	 * @param array $args       Command arguments.
+	 * @param array $assoc_args Command associative arguments.
+	 */
+	public function featured( $args, $assoc_args ) {
+
+		$confirm = WP_CLI::confirm( 'This will set random products as featured. Are you sure?' );
+
+		if ( ! $confirm ) {
+			return;
+		}
+
+		$products = wc_get_products(
+			[
+				'limit'   => $assoc_args['items'] ?? 10,
+				'orderby' => 'rand',
+			]
+		);
+
+		$progress = \WP_CLI\Utils\make_progress_bar( 'Generating featured products', count( $products ) );
+
+		foreach ( $products as $product ) {
+			$product->set_featured( true );
+			$product->save();
+
+			$progress->tick();
+		}
+
+		$progress->finish();
+
+		WP_CLI::success( 'Featured products have been generated.' );
 	}
 }

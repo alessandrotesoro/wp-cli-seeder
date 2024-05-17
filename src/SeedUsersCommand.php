@@ -13,6 +13,9 @@ namespace Sematico\Seeder;
 use Faker\Factory;
 use WP_CLI;
 
+/**
+ * Users seeder command.
+ */
 class SeedUsersCommand {
 
 	/**
