@@ -15,7 +15,9 @@ use JsonMachine\JsonDecoder\ExtJsonDecoder;
 use Sematico\Seeder\Traits\CanDeleteTerms;
 use WP_CLI;
 
+use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\select;
+use function Laravel\Prompts\text;
 
 /**
  * Command for generating WooCommerce products data.
@@ -611,5 +613,112 @@ class SeedProductsCommand extends BaseSeedCommand {
 		$progress->finish();
 
 		WP_CLI::success( 'Stock quantity has been updated.' );
+	}
+
+	/**
+	 * Generate product tags.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp seed products tags
+	 *
+	 * @when after_wp_load
+	 *
+	 * @param array $args       Command arguments.
+	 * @param array $assoc_args Command associative arguments.
+	 */
+	public function tags( $args, $assoc_args ) {
+		$proceed = confirm( 'Do you want to generate product tags?' );
+
+		if ( ! $proceed ) {
+			return;
+		}
+
+		$confirmed = confirm( 'Do you want to delete all existing tags first?' );
+
+		if ( $confirmed ) {
+			$this->delete_terms(
+				null,
+				[
+					'taxonomy' => 'product_tag',
+					'force'    => true,
+				]
+			);
+		}
+
+		WP_CLI::line( '' );
+
+		$number = text(
+			label: 'Enter the number of tags to generate',
+			validate: fn ( string $value ) => match (true) {
+				! is_numeric( $value ) => 'The value must be a number.',
+				default => null
+			},
+		);
+
+		$tags = \Faker\Factory::create()->words( $number );
+
+		$progress = \WP_CLI\Utils\make_progress_bar( 'Generating tags', count( $tags ) );
+
+		foreach ( $tags as $tag ) {
+			wp_insert_term( $tag, 'product_tag' );
+			$progress->tick();
+		}
+
+		$progress->finish();
+
+		WP_CLI::success( 'Tags have been generated.' );
+		WP_CLI::line( '' );
+
+		$assign = confirm( 'Do you want to assign tags to products?' );
+
+		$num = text(
+			label: 'Enter the number of products to assign tags to',
+			validate: fn ( string $value ) => match (true) {
+				! is_numeric( $value ) => 'The value must be a number.',
+				default => null
+			},
+		);
+
+		if ( $assign ) {
+			$products = wc_get_products(
+				[
+					'limit'   => $num,
+					'orderby' => 'rand',
+				]
+			);
+
+			$tags_to_assign = get_terms(
+				[
+					'taxonomy'   => 'product_tag',
+					'hide_empty' => false,
+				]
+			);
+
+			$progress = \WP_CLI\Utils\make_progress_bar( 'Assigning tags to products', count( $products ) );
+
+			foreach ( $products as $product ) {
+				$num_to_pick = rand( 1, count( $tags_to_assign ) );
+
+				// Slice the array to get the required number of random elements
+				$random_terms = array_slice( $tags_to_assign, 0, $num_to_pick );
+
+				$tags = array_map(
+					function ( $term ) {
+						return $term->term_id;
+					},
+					$random_terms
+				);
+
+				$product->set_tag_ids( $tags );
+				$product->save();
+
+				$progress->tick();
+			}
+
+			$progress->finish();
+
+			WP_CLI::success( 'Tags have been assigned to products.' );
+		}
 	}
 }
