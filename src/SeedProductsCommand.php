@@ -891,7 +891,7 @@ class SeedProductsCommand extends BaseSeedCommand {
 		$progress = \WP_CLI\Utils\make_progress_bar( 'Generating terms', count( $terms ) );
 
 		foreach ( $terms as $term ) {
-			wp_insert_term( $term, 'pa_' . $attribute_slug );
+			Attributes::create_attribute( $term, $term );
 			$progress->tick();
 		}
 
