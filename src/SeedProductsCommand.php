@@ -673,15 +673,16 @@ class SeedProductsCommand extends BaseSeedCommand {
 
 		$assign = confirm( 'Do you want to assign tags to products?' );
 
-		$num = text(
-			label: 'Enter the number of products to assign tags to',
-			validate: fn ( string $value ) => match (true) {
-				! is_numeric( $value ) => 'The value must be a number.',
-				default => null
-			},
-		);
-
 		if ( $assign ) {
+
+			$num = text(
+				label: 'Enter the number of products to assign tags to',
+				validate: fn ( string $value ) => match (true) {
+					! is_numeric( $value ) => 'The value must be a number.',
+					default => null
+				},
+			);
+
 			$products = wc_get_products(
 				[
 					'limit'   => $num,
@@ -780,15 +781,15 @@ class SeedProductsCommand extends BaseSeedCommand {
 
 		$assign = confirm( 'Do you want to assign categories to products?' );
 
-		$num = text(
-			label: 'Enter the number of products to assign categories to',
-			validate: fn ( string $value ) => match (true) {
-				! is_numeric( $value ) => 'The value must be a number.',
-				default => null
-			},
-		);
-
 		if ( $assign ) {
+			$num = text(
+				label: 'Enter the number of products to assign categories to',
+				validate: fn ( string $value ) => match (true) {
+					! is_numeric( $value ) => 'The value must be a number.',
+					default => null
+				},
+			);
+
 			$products = wc_get_products(
 				[
 					'limit'   => $num,
