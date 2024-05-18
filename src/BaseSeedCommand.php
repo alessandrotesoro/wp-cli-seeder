@@ -22,17 +22,9 @@ abstract class BaseSeedCommand {
 	/**
 	 * Seed the database with dummy products.
 	 *
-	 * ## OPTIONS
-	 *
-	 * [--items=<number>]
-	 * : How many items to generate.
-	 * ---
-	 * default: 100
-	 * ---
-	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp seed products generate --items=100
+	 *     wp seed products generate
 	 *
 	 * @when after_wp_load
 	 *
@@ -76,28 +68,5 @@ abstract class BaseSeedCommand {
 		$progress->finish();
 
 		WP_CLI::success( "All {$post_type} have been deleted." );
-	}
-
-	/**
-	 * Download and set the featured image for a post.
-	 *
-	 * @param int    $post_id   The post ID.
-	 * @param string $image_url The image URL.
-	 * @return string The image URL.
-	 */
-	protected function download_and_set_featured_image( $post_id, $image_url ) {
-		require_once ABSPATH . 'wp-admin/includes/media.php';
-		require_once ABSPATH . 'wp-admin/includes/file.php';
-		require_once ABSPATH . 'wp-admin/includes/image.php';
-
-		$image = media_sideload_image( $image_url, $post_id, '', 'id' );
-
-		if ( is_wp_error( $image ) ) {
-			WP_CLI::warning( "Could not download image: {$image->get_error_message()}" );
-		}
-
-		set_post_thumbnail( $post_id, $image );
-
-		return $image;
 	}
 }
