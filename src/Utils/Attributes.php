@@ -46,4 +46,53 @@ class Attributes {
 
 		return $attribute;
 	}
+
+	/**
+	 * Get all terms for a specific attribute.
+	 *
+	 * @param string $attribute_slug The attribute slug.
+	 * @return array
+	 */
+	public static function get_attribute_terms( string $attribute_slug ) {
+		$terms = get_terms(
+			[
+				'taxonomy'   => 'pa_' . $attribute_slug,
+				'hide_empty' => false,
+			]
+		);
+
+		return $terms;
+	}
+
+	/**
+	 * Create a new term for a specific attribute.
+	 *
+	 * @param string $attribute_slug The attribute slug.
+	 * @param string $term_name The term name.
+	 * @param string $term_slug The term slug.
+	 * @return int|WP_Error
+	 */
+	public static function create_attribute_term( string $attribute_slug, string $term_name, string $term_slug ) {
+		$term = wp_insert_term(
+			$term_name,
+			'pa_' . $attribute_slug,
+			[
+				'slug' => $term_slug,
+			]
+		);
+
+		return $term;
+	}
+
+	/**
+	 * Get the attribute ID by its slug.
+	 *
+	 * @param string $slug The attribute slug.
+	 * @return int
+	 */
+	public static function get_attribute_id_by_slug( string $slug ): int {
+		$attribute = wc_get_attribute_taxonomy_by_name( $slug );
+		return $attribute->attribute_id;
+	}
+
 }
