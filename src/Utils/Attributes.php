@@ -95,4 +95,25 @@ class Attributes {
 		return $attribute->attribute_id;
 	}
 
+	/**
+	 * Attach a term to a product as an attribute.
+	 *
+	 * @param \WP_Term $term The term object.
+	 * @param int      $product_id The product ID.
+	 * @return void
+	 */
+	public static function attach_term_attribute_to_product( \WP_Term $term, int $product_id ) {
+		$att = new \WC_Product_Attribute();
+		$att->set_id( $term->term_id );
+		$att->set_name( $term->taxonomy );
+		$att->set_options( [ $term->term_id ] );
+		$att->set_position( 0 );
+		$att->set_visible( true );
+		$att->set_variation( false );
+
+		$product = wc_get_product( $product_id );
+
+		$product->set_attributes( [ $term->taxonomy => $att ] );
+		$product->save();
+	}
 }

@@ -17,7 +17,9 @@ use Sematico\Seeder\Utils\Attributes;
 use WP_CLI;
 
 use function Laravel\Prompts\confirm;
+use function Laravel\Prompts\info;
 use function Laravel\Prompts\select;
+use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
 
 /**
@@ -874,8 +876,6 @@ class SeedProductsCommand extends BaseSeedCommand {
 					'force'    => true,
 				]
 			);
-
-			WP_CLI::line( '' );
 		}
 
 		$number = text(
@@ -891,7 +891,11 @@ class SeedProductsCommand extends BaseSeedCommand {
 		$progress = \WP_CLI\Utils\make_progress_bar( 'Generating terms', count( $terms ) );
 
 		foreach ( $terms as $term ) {
-			Attributes::create_attribute( $term, $term );
+			Attributes::create_attribute_term(
+				$attribute_slug,
+				$term,
+				sanitize_title( $term )
+			);
 			$progress->tick();
 		}
 
@@ -934,15 +938,9 @@ class SeedProductsCommand extends BaseSeedCommand {
 				// Slice the array to get the required number of random elements
 				$random_terms = array_slice( $terms_to_assign, 0, $num_to_pick );
 
-				$terms = array_map(
-					function ( $term ) {
-						return $term->term_id;
-					},
-					$random_terms
-				);
-
-				$product->set_attribute( 'pa_' . $attribute_slug, $terms );
-				$product->save();
+				foreach ( $random_terms as $random_term ) {
+					Attributes::attach_term_attribute_to_product( $random_term, $product->get_id() );
+				}
 
 				$progress->tick();
 			}
