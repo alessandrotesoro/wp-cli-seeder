@@ -71,7 +71,7 @@ class TenKProducts extends BaseDataset {
 		$products = Items::fromFile( SEEDER_PATH . 'data/10k_records.json', [ 'decoder' => new ExtJsonDecoder( true ) ] );
 
 		// Get the number of items to seed from the products array.
-		$products = array_slice( iterator_to_array( $products ), 0, $items );
+		$products = array_slice( iterator_to_array( $products ), 0, $how_many_products );
 
 		// Collect the "hierarchicalCategories" from the products array.
 		$categories = array_column( $products, 'hierarchicalCategories' );
