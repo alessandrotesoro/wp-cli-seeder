@@ -13,6 +13,7 @@ namespace Sematico\Seeder;
 use JsonMachine\Items;
 use JsonMachine\JsonDecoder\ExtJsonDecoder;
 use Sematico\Seeder\Traits\CanDeleteTerms;
+use Sematico\Seeder\Utils\Attributes;
 use WP_CLI;
 
 use function Laravel\Prompts\confirm;
@@ -805,7 +806,7 @@ class SeedProductsCommand extends BaseSeedCommand {
 			$progress = \WP_CLI\Utils\make_progress_bar( 'Assigning categories to products', count( $products ) );
 
 			foreach ( $products as $product ) {
-				$num_to_pick = rand ( 1, count( $categories_to_assign ) );
+				$num_to_pick = rand( 1, count( $categories_to_assign ) );
 
 				// Slice the array to get the required number of random elements
 				$random_terms = array_slice( $categories_to_assign, 0, $num_to_pick );
@@ -827,6 +828,127 @@ class SeedProductsCommand extends BaseSeedCommand {
 
 			WP_CLI::success( 'Categories have been assigned to products.' );
 
+		}
+	}
+
+	/**
+	 * Generate product attributes.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp seed products attributes
+	 *
+	 * @when after_wp_load
+	 *
+	 * @param array $args       Command arguments.
+	 * @param array $assoc_args Command associative arguments.
+	 */
+	public function attributes( $args, $assoc_args ) {
+		$proceed = confirm( 'Do you want to generate product attributes?' );
+
+		if ( ! $proceed ) {
+			return;
+		}
+
+		$attributes = Attributes::get_wc_attributes();
+
+		if ( empty( $attributes ) ) {
+			WP_CLI::error( 'No attributes found.' );
+		}
+
+		$attributes = array_column( $attributes, 'attribute_label', 'attribute_name' );
+
+		$attribute_slug = select(
+			label: 'Select an attribute',
+			options: $attributes,
+		);
+
+		$maybe_delete = confirm( 'Do you want to delete all terms for this attribute?' );
+
+		if ( $maybe_delete ) {
+			$this->delete_terms(
+				null,
+				[
+					'taxonomy' => 'pa_' . $attribute_slug,
+					'force'    => true,
+				]
+			);
+
+			WP_CLI::line( '' );
+		}
+
+		$number = text(
+			label: 'Enter the number of terms to generate',
+			validate: fn ( string $value ) => match (true) {
+				! is_numeric( $value ) => 'The value must be a number.',
+				default => null
+			},
+		);
+
+		$terms = \Faker\Factory::create()->words( $number );
+
+		$progress = \WP_CLI\Utils\make_progress_bar( 'Generating terms', count( $terms ) );
+
+		foreach ( $terms as $term ) {
+			wp_insert_term( $term, 'pa_' . $attribute_slug );
+			$progress->tick();
+		}
+
+		$progress->finish();
+
+		WP_CLI::success( 'Terms have been generated.' );
+		WP_CLI::line( '' );
+
+		$assign = confirm( 'Do you want to assign terms to products?' );
+
+		if ( $assign ) {
+
+			$num = text(
+				label: 'Enter the number of products to assign terms to',
+				validate: fn ( string $value ) => match (true) {
+					! is_numeric( $value ) => 'The value must be a number.',
+					default => null
+				},
+			);
+
+			$products = wc_get_products(
+				[
+					'limit'   => $num,
+					'orderby' => 'rand',
+				]
+			);
+
+			$terms_to_assign = get_terms(
+				[
+					'taxonomy'   => 'pa_' . $attribute_slug,
+					'hide_empty' => false,
+				]
+			);
+
+			$progress = \WP_CLI\Utils\make_progress_bar( 'Assigning terms to products', count( $products ) );
+
+			foreach ( $products as $product ) {
+				$num_to_pick = rand( 1, count( $terms_to_assign ) );
+
+				// Slice the array to get the required number of random elements
+				$random_terms = array_slice( $terms_to_assign, 0, $num_to_pick );
+
+				$terms = array_map(
+					function ( $term ) {
+						return $term->term_id;
+					},
+					$random_terms
+				);
+
+				$product->set_attribute( 'pa_' . $attribute_slug, $terms );
+				$product->save();
+
+				$progress->tick();
+			}
+
+			$progress->finish();
+
+			WP_CLI::success( 'Terms have been assigned to products.' );
 		}
 	}
 }
