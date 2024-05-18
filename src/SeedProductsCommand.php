@@ -950,4 +950,71 @@ class SeedProductsCommand extends BaseSeedCommand {
 			WP_CLI::success( 'Terms have been assigned to products.' );
 		}
 	}
+
+	/**
+	 * Generate product reviews.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp seed products reviews
+	 *
+	 * @when after_wp_load
+	 *
+	 * @param array $args       Command arguments.
+	 * @param array $assoc_args Command associative arguments.
+	 */
+	public function reviews( $args, $assoc_args ) {
+
+		$proceed = confirm( 'Do you want to generate product reviews?' );
+
+		if ( ! $proceed ) {
+			return;
+		}
+
+		$number_of_products = text(
+			label: 'Enter the number of products to generate reviews for',
+			validate: fn ( string $value ) => match (true) {
+				! is_numeric( $value ) => 'The value must be a number.',
+				default => null
+			},
+		);
+
+		$products = wc_get_products(
+			[
+				'limit'   => $number_of_products,
+				'orderby' => 'rand',
+			]
+		);
+
+		$progress = \WP_CLI\Utils\make_progress_bar( 'Generating reviews', count( $products ) );
+
+		foreach ( $products as $product ) {
+			$faker = \Faker\Factory::create();
+
+			$request = new \WP_REST_Request( 'POST', '/wc/v3/products/reviews' );
+			$request->set_param( 'reviewer', $faker->name );
+			$request->set_param( 'reviewer_email', $faker->email );
+			$request->set_param( 'rating', wp_rand( 1, 5 ) );
+			$request->set_param( 'review', $faker->text );
+			$request->set_param( 'status', 'approved' );
+			$request->set_param( 'product_id', $product->get_id() );
+
+			$response = rest_do_request( $request );
+
+			if ( is_wp_error( $response ) ) {
+				WP_CLI::error( $response->get_error_message() );
+			}
+
+			if ( 201 !== $response->get_status() ) {
+				dd( $response );
+				WP_CLI::error( 'An error occurred while generating reviews. You might want to check the logs or authenticate first via WP CLI.' );
+			}
+
+			$progress->tick();
+		}
+
+		$progress->finish();
+
+		WP_CLI::success( 'Reviews have been generated.' );
+	}
 }
