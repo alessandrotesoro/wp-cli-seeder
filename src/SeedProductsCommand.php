@@ -721,4 +721,112 @@ class SeedProductsCommand extends BaseSeedCommand {
 			WP_CLI::success( 'Tags have been assigned to products.' );
 		}
 	}
+
+	/**
+	 * Generate product categories.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp seed products categories
+	 *
+	 * @when after_wp_load
+	 *
+	 * @param array $args       Command arguments.
+	 * @param array $assoc_args Command associative arguments.
+	 */
+	public function categories( $args, $assoc_args ) {
+		$proceed = confirm( 'Do you want to generate product categories?' );
+
+		if ( ! $proceed ) {
+			return;
+		}
+
+		$confirmed = confirm( 'Do you want to delete all existing categories first?' );
+
+		if ( $confirmed ) {
+			$this->delete_terms(
+				null,
+				[
+					'taxonomy' => 'product_cat',
+					'force'    => true,
+				]
+			);
+		}
+
+		WP_CLI::line( '' );
+
+		$number = text(
+			label: 'Enter the number of categories to generate',
+			validate: fn ( string $value ) => match (true) {
+				! is_numeric( $value ) => 'The value must be a number.',
+				default => null
+			},
+		);
+
+		$categories = \Faker\Factory::create()->words( $number );
+
+		$progress = \WP_CLI\Utils\make_progress_bar( 'Generating categories', count( $categories ) );
+
+		foreach ( $categories as $category ) {
+			wp_insert_term( $category, 'product_cat' );
+			$progress->tick();
+		}
+
+		$progress->finish();
+
+		WP_CLI::success( 'Categories have been generated.' );
+		WP_CLI::line( '' );
+
+		$assign = confirm( 'Do you want to assign categories to products?' );
+
+		$num = text(
+			label: 'Enter the number of products to assign categories to',
+			validate: fn ( string $value ) => match (true) {
+				! is_numeric( $value ) => 'The value must be a number.',
+				default => null
+			},
+		);
+
+		if ( $assign ) {
+			$products = wc_get_products(
+				[
+					'limit'   => $num,
+					'orderby' => 'rand',
+				]
+			);
+
+			$categories_to_assign = get_terms(
+				[
+					'taxonomy'   => 'product_cat',
+					'hide_empty' => false,
+				]
+			);
+
+			$progress = \WP_CLI\Utils\make_progress_bar( 'Assigning categories to products', count( $products ) );
+
+			foreach ( $products as $product ) {
+				$num_to_pick = rand ( 1, count( $categories_to_assign ) );
+
+				// Slice the array to get the required number of random elements
+				$random_terms = array_slice( $categories_to_assign, 0, $num_to_pick );
+
+				$categories = array_map(
+					function ( $term ) {
+						return $term->term_id;
+					},
+					$random_terms
+				);
+
+				$product->set_category_ids( $categories );
+				$product->save();
+
+				$progress->tick();
+			}
+
+			$progress->finish();
+
+			WP_CLI::success( 'Categories have been assigned to products.' );
+
+		}
+	}
 }
