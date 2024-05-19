@@ -11,6 +11,7 @@
 namespace Sematico\Seeder;
 
 use Sematico\Seeder\Traits\CanDeleteTerms;
+use Sematico\Seeder\Traits\CanGenerateTerms;
 use Sematico\Seeder\Utils\PostTypes;
 use WP_CLI;
 
@@ -24,6 +25,7 @@ use function Laravel\Prompts\text;
 class SeedPostsCommand extends BaseSeedCommand {
 
 	use CanDeleteTerms;
+	use CanGenerateTerms;
 
 	/**
 	 * Seed the database with dummy posts for the specified post type.
