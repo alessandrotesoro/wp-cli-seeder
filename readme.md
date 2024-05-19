@@ -113,6 +113,10 @@ The command will help you generate meta values for posts based on custom fields 
 
 Currently supported field types are the same as for products.
 
+#### `wp seed posts terms`
+
+Seed the database with dummy terms for a specific taxonomy. You will be asked to specify how many terms you want to seed and for which taxonomy. At the end of the process, you will be asked if you want to assign the generated terms to posts.
+
 #### `wp seed users generate`
 
 Seed the database with dummy users.
