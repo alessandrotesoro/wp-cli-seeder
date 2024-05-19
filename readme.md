@@ -44,16 +44,9 @@ wp seed
 
 Seed the database with dummy products for WooCommerce.
 
-The command will automatically download images for the products from Algolia's CDN. If you want to skip this step, you can use the `--skip-images` option. Additionally, the command will generate categories and 2 custom product attributes.
+The seeding process makes use of a dataset of 10k products. The command will ask you a few questions to determine how many products you want to seed and if you want to seed products with images.
 
-Note that the command will always wipe out the existing products, categories, and attributes before seeding the database.
-
-The maximum number of products that can be seeded is 10000.
-
-##### Options
-
-- `--items=<number>`: The number of products to seed. Default is 100.
-- `--skip-images`: Skip downloading images for the products.
+More datasets may be added in the future.
 
 #### `wp seed products delete`
 
@@ -61,11 +54,64 @@ Delete all products from the database.
 
 #### `wp seed products sales`
 
-Seed the database with dummy discounted sale prices for products. Note that this command will randomly select products to apply the sale price to.
+Seed the database with dummy discounted sale prices for products. Note that this command will randomly select products to apply the sale price to. You will be asked to specify how many products you want to apply the sale price to.
 
-##### Options
+#### `wp seed products featured`
 
-- `--items=<number>`: The number of products to apply the sale price to. Default is 10.
+This command will randomly select products to mark as featured. You will be asked to specify how many products you want to mark as featured.
+
+#### `wp seed products stock_status`
+
+Apply a stock status to random products. You will be asked to specify how many products you want to apply the stock status to and which status you want to apply.
+
+#### `wp seed products stock_quantity`
+
+Apply a stock quantity to random products. You will be asked to specify how many products you want to apply the stock quantity to. The quantity will be randomly generated between 1 and 100.
+
+#### `wp seed products categories`
+
+Seed the database with dummy product categories. You will be asked to specify how many categories you want to seed and if you want to then assign the categories to products.
+
+#### `wp seed products tags`
+
+Seed the database with dummy product tags. You will be asked to specify how many tags you want to seed and if you want to then assign the tags to products.
+
+#### `wp seed products attributes`
+
+The command will help you generate random terms for product attributes that already exist in the database. You will be asked to specify how many terms you want to generate and which attribute you want to generate the terms for.
+
+At the end of the process, you will be asked if you want to assign the generated terms to products.
+
+#### `wp seed products reviews`
+
+Seed the database with dummy product reviews. You will be asked to specify for how many products you want to seed reviews. The command will create one review for each product.
+
+#### `wp seed products custom_fields`
+
+The command will help you generate meta values for products based on custom fields that created via the Advanced Custom Fields plugin. You will be asked to specify how many products you want to generate meta values for and which custom field you want to generate the values for.
+
+Currently supported field types are:
+
+- Text
+- Textarea
+- Number
+- Radio
+- Select
+- Checkbox
+
+#### `wp seed posts generate`
+
+Seed the database with dummy posts. You will be asked to specify how many posts you want to seed and for which post type. Only public post types are supported.
+
+#### `wp seed posts delete`
+
+Delete all posts from the database.
+
+#### `wp seed posts custom_fields`
+
+The command will help you generate meta values for posts based on custom fields that created via the Advanced Custom Fields plugin. You will be asked to specify how many posts you want to generate meta values for and which custom field you want to generate the values for.
+
+Currently supported field types are the same as for products.
 
 #### `wp seed users generate`
 
