@@ -95,4 +95,23 @@ class SeedPostsCommand extends BaseSeedCommand {
 		return $post_id;
 	}
 
+	/**
+	 * Seed the database with dummy meta fields.
+	 *
+	 * @param array $args       Command arguments.
+	 * @param array $assoc_args Command associative arguments.
+	 * @return void
+	 */
+	public function custom_fields( $args, $assoc_args ) {
+		$post_type = search(
+			'Which post type do you want to seed?',
+			fn ( string $value ) => strlen( $value ) > 0
+			? PostTypes::get_post_types_for_dropdown( $value )
+			: []
+		);
+
+		$this->set_post_type( $post_type );
+
+		parent::custom_fields( $args, $assoc_args );
+	}
 }
