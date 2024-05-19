@@ -10,7 +10,11 @@
 
 namespace Sematico\Seeder;
 
+use Sematico\Seeder\Utils\ACF;
 use WP_CLI;
+
+use function Laravel\Prompts\select;
+use function Laravel\Prompts\text;
 
 /**
  * Base class for seeding commands.
@@ -41,6 +45,10 @@ abstract class BaseSeedCommand {
 	 *     wp seed products delete
 	 *
 	 * @when after_wp_load
+	 *
+	 * @param array $args       Command arguments.
+	 * @param array $assoc_args Command associative arguments.
+	 * @return void
 	 */
 	public function delete( $args, $assoc_args ) {
 		$post_type = $this->post_type;
@@ -68,5 +76,40 @@ abstract class BaseSeedCommand {
 		$progress->finish();
 
 		WP_CLI::success( "All {$post_type} have been deleted." );
+	}
+
+	/**
+	 * Seed the database with dummy meta fields.
+	 *
+	 * @param array $args       Command arguments.
+	 * @param array $assoc_args Command associative arguments.
+	 * @return void
+	 */
+	public function custom_fields( $args, $assoc_args ) {
+		$acf = ACF::is_acf_active();
+
+		if ( ! $acf ) {
+			WP_CLI::error( 'Advanced Custom Fields is not active.' );
+		}
+
+		$post_type = $this->post_type;
+
+		$groups = ACF::get_all_fields_groups_for_post_type( $post_type );
+		$fields = ACF::get_fields_from_groups( $groups );
+
+		$dropdown_options = ACF::format_fields_for_dropdown( $fields );
+
+		$selected_field = select(
+			'Select a field to seed',
+			$dropdown_options
+		);
+
+		$number_of_posts = text(
+			label: sprintf( 'How many posts of the "%s" post type do you want to seed?', $post_type ),
+			validate: fn ( string $value ) => match (true) {
+				! is_numeric( $value ) => 'The value must be a number.',
+				default => null
+			},
+		);
 	}
 }
