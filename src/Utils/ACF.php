@@ -100,4 +100,118 @@ class ACF {
 		return $formatted_fields;
 	}
 
+	/**
+	 * Seed data for a post by field type.
+	 *
+	 * @param array  $field            The field data.
+	 * @param int    $number_of_posts  The number of posts to seed.
+	 * @param string $post_type        The post type to seed.
+	 * @return void
+	 */
+	public static function seed_data_for_post_by_field_type( array $field, int $number_of_posts, string $post_type ) {
+		$posts = get_posts(
+			[
+				'post_type'      => $post_type,
+				'posts_per_page' => $number_of_posts,
+				'fields'         => 'ids',
+			]
+		);
+
+		$type = $field['type'];
+
+		$progress = \WP_CLI\Utils\make_progress_bar( "Seeding data for the '{$field['label']}' field", count( $posts ) );
+
+		foreach ( $posts as $post ) {
+			$value = self::generate_field_value( $type, $field );
+
+			update_field( $field['key'], $value, $post );
+
+			$progress->tick();
+		}
+
+		$progress->finish();
+	}
+
+	/**
+	 * Generate a value for a given field type.
+	 *
+	 * @param string $type  The field type.
+	 * @param array  $field The field data.
+	 * @return mixed
+	 */
+	public static function generate_field_value( string $type, array $field ) {
+		$method = 'generate_field_' . $type . '_value';
+
+		if ( method_exists( __CLASS__, $method ) ) {
+			return self::$method( $field );
+		}
+
+		WP_CLI::error( 'The field type is not yet supported. The currently supported field types are: text, textarea, number, select, checkbox, radio.' );
+	}
+
+	/**
+	 * Generate a value for a text field.
+	 *
+	 * @param array $field The field data.
+	 * @return string
+	 */
+	public static function generate_field_text_value( array $field ) {
+		return \Faker\Factory::create()->word();
+	}
+
+	/**
+	 * Generate a value for a textarea field.
+	 *
+	 * @param array $field The field data.
+	 * @return string
+	 */
+	public static function generate_field_textarea_value( array $field ) {
+		return \Faker\Factory::create()->sentence();
+	}
+
+	/**
+	 * Generate a value for a number field.
+	 *
+	 * @param array $field The field data.
+	 * @return int
+	 */
+	public static function generate_field_number_value( array $field ) {
+		return \Faker\Factory::create()->numberBetween( 1, 100 );
+	}
+
+	/**
+	 * Generate a value for a select field.
+	 *
+	 * @param array $field The field data.
+	 * @return string
+	 */
+	public static function generate_field_select_value( array $field ) {
+		$options = $field['choices'];
+		$option  = array_rand( $options, 1 );
+		return $options[ $option ];
+	}
+
+	/**
+	 * Generate a value for a checkbox field.
+	 *
+	 * @param array $field The field data.
+	 * @return array
+	 */
+	public static function generate_field_checkbox_value( array $field ) {
+		$options = $field['choices'];
+		$option  = array_rand( $options, 1 );
+		return [ $options[ $option ] ];
+	}
+
+	/**
+	 * Generate a value for a radio field.
+	 *
+	 * @param array $field The field data.
+	 * @return string
+	 */
+	public static function generate_field_radio_value( array $field ) {
+		$options = $field['choices'];
+		$option  = array_rand( $options, 1 );
+		return $options[ $option ];
+	}
 }

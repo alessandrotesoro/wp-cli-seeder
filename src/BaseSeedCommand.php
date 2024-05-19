@@ -94,9 +94,8 @@ abstract class BaseSeedCommand {
 
 		$post_type = $this->post_type;
 
-		$groups = ACF::get_all_fields_groups_for_post_type( $post_type );
-		$fields = ACF::get_fields_from_groups( $groups );
-
+		$groups           = ACF::get_all_fields_groups_for_post_type( $post_type );
+		$fields           = ACF::get_fields_from_groups( $groups );
 		$dropdown_options = ACF::format_fields_for_dropdown( $fields );
 
 		$selected_field = select(
@@ -111,5 +110,17 @@ abstract class BaseSeedCommand {
 				default => null
 			},
 		);
+
+		// Get the field by the selected name from the $fields array.
+		$field = array_filter(
+			$fields,
+			fn( $field ) => $field['name'] === $selected_field
+		);
+
+		$field = array_shift( $field );
+
+		ACF::seed_data_for_post_by_field_type( $field, $number_of_posts, $post_type );
+
+		WP_CLI::success( "The field '{$selected_field}' has been seeded for {$number_of_posts} posts of the '{$post_type}' post type." );
 	}
 }
