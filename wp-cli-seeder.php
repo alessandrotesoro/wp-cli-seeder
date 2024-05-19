@@ -22,3 +22,4 @@ define( 'SEEDER_PATH', plugin_dir_path( __FILE__ ) );
 
 \WP_CLI::add_command( 'seed products', SeedProductsCommand::class );
 \WP_CLI::add_command( 'seed users', SeedUsersCommand::class );
+\WP_CLI::add_command( 'seed posts', SeedPostsCommand::class );

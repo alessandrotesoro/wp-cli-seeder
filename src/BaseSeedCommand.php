@@ -38,6 +38,27 @@ abstract class BaseSeedCommand {
 	abstract public function generate( $args, $assoc_args );
 
 	/**
+	 * Set the post type for the command.
+	 *
+	 * @param string $post_type The post type to set.
+	 * @return self
+	 */
+	protected function set_post_type( string $post_type ): self {
+		$this->post_type = $post_type;
+
+		return $this;
+	}
+
+	/**
+	 * Get the post type for the command.
+	 *
+	 * @return string
+	 */
+	protected function get_post_type(): string {
+		return $this->post_type;
+	}
+
+	/**
 	 * Delete all posts of a given post type from the database.
 	 *
 	 * ## EXAMPLES
