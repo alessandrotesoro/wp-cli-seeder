@@ -31,24 +31,9 @@ class SeedProductsCommand extends BaseSeedCommand {
 	/**
 	 * Seed the database with dummy products.
 	 *
-	 * ## OPTIONS
-	 *
-	 * [--items=<number>]
-	 * : How many items to generate.
-	 * ---
-	 * default: 100
-	 * ---
-	 *
-	 * [--skip-images]
-	 * : Whether to download images or not.
-	 * ---
-	 * default: false
-	 * ---
-	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp seed products generate --items=100
-	 *     wp seed products generate --items=1000 --skip-images
+	 *     wp seed products generate
 	 *
 	 * @when after_wp_load
 	 *
