@@ -65,17 +65,9 @@ class SeedProductsCommand extends BaseSeedCommand {
 	/**
 	 * Randomly set a sale price for products.
 	 *
-	 * ## OPTIONS
-	 *
-	 * [--items=<number>]
-	 * : For how many items to generate sales.
-	 * ---
-	 * default: 10
-	 * ---
-	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp seed products sale --items=10
+	 *     wp seed products sale
 	 *
 	 * @when after_wp_load
 	 *
@@ -90,9 +82,17 @@ class SeedProductsCommand extends BaseSeedCommand {
 			return;
 		}
 
+		$number_of_products = text(
+			label: 'Enter the number of products to generate sales for',
+			validate: fn ( string $value ) => match (true) {
+				! is_numeric( $value ) => 'The value must be a number.',
+				default => null
+			},
+		);
+
 		$products = wc_get_products(
 			[
-				'limit'   => $assoc_args['items'] ?? 10,
+				'limit'   => $number_of_products,
 				'orderby' => 'rand',
 			]
 		);
@@ -114,17 +114,9 @@ class SeedProductsCommand extends BaseSeedCommand {
 	/**
 	 * Randomly set products as featured.
 	 *
-	 * ## OPTIONS
-	 *
-	 * [--items=<number>]
-	 * : For how many items to generate sales.
-	 * ---
-	 * default: 10
-	 * ---
-	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp seed products featured --items=10
+	 *     wp seed products featured
 	 *
 	 * @when after_wp_load
 	 *
@@ -134,9 +126,17 @@ class SeedProductsCommand extends BaseSeedCommand {
 	public function featured( $args, $assoc_args ) {
 		WP_CLI::confirm( 'This will set random products as featured. Are you sure?' );
 
+		$num = text(
+			label: 'Enter the number of products to set as featured',
+			validate: fn ( string $value ) => match (true) {
+				! is_numeric( $value ) => 'The value must be a number.',
+				default => null
+			},
+		);
+
 		$products = wc_get_products(
 			[
-				'limit'   => $assoc_args['items'] ?? 10,
+				'limit'   => $num,
 				'orderby' => 'rand',
 			]
 		);
@@ -158,17 +158,9 @@ class SeedProductsCommand extends BaseSeedCommand {
 	/**
 	 * Randomly set stock status for products.
 	 *
-	 * ## OPTIONS
-	 *
-	 * [--items=<number>]
-	 * : For how many items to generate sales.
-	 * ---
-	 * default: 10
-	 * ---
-	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp seed products stock_status --items=10
+	 *     wp seed products stock_status
 	 *
 	 * @when after_wp_load
 	 *
@@ -186,9 +178,17 @@ class SeedProductsCommand extends BaseSeedCommand {
 			default: 'instock'
 		);
 
+		$number_of_products = text(
+			label: 'Enter the number of products to update stock status for',
+			validate: fn ( string $value ) => match (true) {
+				! is_numeric( $value ) => 'The value must be a number.',
+				default => null
+			},
+		);
+
 		$products = wc_get_products(
 			[
-				'limit'   => $assoc_args['items'] ?? 10,
+				'limit'   => $number_of_products,
 				'orderby' => 'rand',
 			]
 		);
@@ -210,17 +210,9 @@ class SeedProductsCommand extends BaseSeedCommand {
 	/**
 	 * Randomly set stock quantity for products.
 	 *
-	 * ## OPTIONS
-	 *
-	 * [--items=<number>]
-	 * : For how many items to generate sales.
-	 * ---
-	 * default: 10
-	 * ---
-	 *
 	 * ## EXAMPLES
 	 *
-	 *     wp seed products stock_quantity --items=10
+	 *     wp seed products stock_quantity
 	 *
 	 * @when after_wp_load
 	 *
@@ -230,9 +222,17 @@ class SeedProductsCommand extends BaseSeedCommand {
 	public function stock_quantity( $args, $assoc_args ) {
 		WP_CLI::confirm( 'This will update the stock quantity for random products. Are you sure?' );
 
+		$number_of_products = text(
+			label: 'Enter the number of products to update stock quantity for',
+			validate: fn ( string $value ) => match (true) {
+				! is_numeric( $value ) => 'The value must be a number.',
+				default => null
+			},
+		);
+
 		$products = wc_get_products(
 			[
-				'limit'   => $assoc_args['items'] ?? 10,
+				'limit'   => $number_of_products,
 				'orderby' => 'rand',
 			]
 		);
